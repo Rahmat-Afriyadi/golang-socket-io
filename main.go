@@ -173,9 +173,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 
 	// "github.com/graarh/golang-socketio/transport"
 
@@ -209,6 +210,13 @@ func GinMiddleware(allowOrigin string) gin.HandlerFunc {
 }
 
 func main() {
+
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	router := gin.New()
 
 	server := socketio.NewServer(&engineio.Options{
@@ -262,13 +270,12 @@ func main() {
 	}()
 	defer server.Close()
 
-	router.Use(cors.Default())
-	// router.Use(GinMiddleware("http://localhost:8080"))
+	router.Use(GinMiddleware("http://localhost:8080"))
 	router.GET("/socket.io/*any", gin.WrapH(server))
 	router.POST("/socket.io/*any", gin.WrapH(server))
 	router.StaticFS("/public", http.Dir("./asset"))
 
-	if err := router.Run(":8000"); err != nil {
+	if err := router.Run(":" + os.Getenv("PORT")); err != nil {
 		log.Fatal("failed run app: ", err)
 	}
 }
