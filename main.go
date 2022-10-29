@@ -271,6 +271,9 @@ func main() {
 	defer server.Close()
 
 	router.Use(GinMiddleware("http://localhost:8080"))
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusAccepted, os.Getenv("PORT"))
+	})
 	router.GET("/socket.io/*any", gin.WrapH(server))
 	router.POST("/socket.io/*any", gin.WrapH(server))
 	router.StaticFS("/public", http.Dir("./asset"))
